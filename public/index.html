@@ -15,7 +15,7 @@
   (function () {
     if (!('serviceWorker' in navigator) || !navigator.serviceWorker.controller) return;
     navigator.serviceWorker.addEventListener('controllerchange', function () {
-      var key = 'watchnest:worker-reload:20260826-4';
+      var key = 'watchnest:worker-reload:20260826-5';
       if (sessionStorage.getItem(key)) return;
       sessionStorage.setItem(key, '1');
       location.reload();
@@ -60,7 +60,7 @@
   <script defer src="/domain.js"></script>
   <script defer src="/catalog.js"></script>
   <script defer src="/store.js"></script>
-  <script defer src="/app.js?v=20260826-4"></script>
+  <script defer src="/app.js?v=20260826-5"></script>
 </head>
 <body>
   <div id="app-shell" class="app-shell">

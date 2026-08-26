@@ -148,18 +148,28 @@
     </div>`;
   }
 
-  function renderDiscover() {
+  function renderDiscoverResults() {
     const type = ui.discoverType;
     const visible = (ui.query ? ui.searchResults : ui.catalogItems).filter((item) => type === 'all' || item.type === type);
     const label = ui.query ? `Results for “${ui.query}”` : 'Popular right now';
+    return `<section id="catalog-results"><div class="section-heading"><div><h2 class="section-title">${escapeHtml(label)}</h2><p class="section-kicker">${ui.searching ? 'Searching live catalogs…' : `${visible.length} titles`}</p></div></div>
+      ${ui.searching ? `<div class="grid grid-cols-2 gap-3 sm:grid-cols-4 lg:grid-cols-6"><div class="skeleton aspect-[2/3]"></div><div class="skeleton aspect-[2/3]"></div><div class="skeleton aspect-[2/3]"></div><div class="skeleton aspect-[2/3]"></div></div>` : visible.length ? `<div class="grid grid-cols-2 gap-x-3 gap-y-5 sm:grid-cols-4 lg:grid-cols-6">${visible.map(mediaCard).join('')}</div>` : emptyState('No titles found', 'Try another spelling or switch media type. The bundled catalog remains available offline.', false)}
+      </section>`;
+  }
+
+  function renderDiscover() {
     return `<div class="screen-inner" data-screen="discover">
       <div class="mt-2"><p class="text-xs font-extrabold uppercase tracking-[0.16em] text-amber-300">Discover</p><h1 class="mt-1 text-3xl font-black tracking-tight">Movies, shows &amp; anime</h1><p class="mt-2 max-w-xl text-sm leading-relaxed text-slate-400">Search live catalogs or browse WatchNest picks. Your searches are never stored on the backend.</p></div>
       <label class="search-wrap mt-5 block">${icon('search')}<span class="sr-only">Search titles</span><input id="catalog-search" class="search-field" type="search" autocomplete="off" placeholder="Search a title…" value="${escapeHtml(ui.query)}"></label>
       <div class="mt-3">${typePills('discover')}</div>
-      <section><div class="section-heading"><div><h2 class="section-title">${escapeHtml(label)}</h2><p class="section-kicker">${ui.searching ? 'Searching live catalogs…' : `${visible.length} titles`}</p></div></div>
-      ${ui.searching ? `<div class="grid grid-cols-2 gap-3 sm:grid-cols-4 lg:grid-cols-6"><div class="skeleton aspect-[2/3]"></div><div class="skeleton aspect-[2/3]"></div><div class="skeleton aspect-[2/3]"></div><div class="skeleton aspect-[2/3]"></div></div>` : visible.length ? `<div class="grid grid-cols-2 gap-x-3 gap-y-5 sm:grid-cols-4 lg:grid-cols-6">${visible.map(mediaCard).join('')}</div>` : emptyState('No titles found', 'Try another spelling or switch media type. The bundled catalog remains available offline.', false)}
-      </section>
+      ${renderDiscoverResults()}
     </div>`;
+  }
+
+  function refreshDiscoverResults() {
+    if (ui.screen !== 'discover' || ui.detailKey) return;
+    const current = document.getElementById('catalog-results');
+    if (current) current.outerHTML = renderDiscoverResults();
   }
 
   function statusPills() {
@@ -424,14 +434,22 @@
     if (event.target.id !== 'catalog-search') return;
     ui.query = event.target.value.slice(0, 80);
     clearTimeout(searchTimer);
-    if (ui.query.trim().length < 2) { ui.searchResults = []; ui.searching = false; render(); return; }
+    if (ui.query.trim().length < 2) {
+      ui.searchResults = [];
+      ui.searching = false;
+      refreshDiscoverResults();
+      return;
+    }
     ui.searching = true;
     const query = ui.query;
+    const type = ui.discoverType;
+    refreshDiscoverResults();
     searchTimer = setTimeout(async () => {
-      ui.searchResults = await catalog.search(query, ui.discoverType);
+      const results = await catalog.search(query, type);
+      if (ui.query !== query || ui.discoverType !== type) return;
+      ui.searchResults = results;
       ui.searching = false;
-      render();
-      document.getElementById('catalog-search')?.focus({ preventScroll:true });
+      refreshDiscoverResults();
     }, 280);
   });
 
@@ -479,7 +497,7 @@
     render();
     await store.checkRemoteClock();
     if ('serviceWorker' in navigator && !demo) {
-      navigator.serviceWorker.register('/sw.js?v=20260826-4').then((registration) => registration.update()).catch(() => undefined);
+      navigator.serviceWorker.register('/sw.js?v=20260826-5').then((registration) => registration.update()).catch(() => undefined);
     }
     if (window.unNative?.attachPullToRefresh) window.unNative.attachPullToRefresh(screenEl, async () => { ui.catalogItems = await catalog.discover(); render(); }, { topEl:document.getElementById('top-bar') });
     if (window.unNative?.attachKeyboardAvoidance) window.unNative.attachKeyboardAvoidance(screenEl, { topEl:document.getElementById('top-bar') });
