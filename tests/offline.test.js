@@ -8,7 +8,7 @@ const path = require('node:path');
 test('service worker precaches the shell and never handles API requests', () => {
   const source = fs.readFileSync(path.join(__dirname, '..', 'public', 'sw.js'), 'utf8');
   assert.match(source, /'\/index\.html'/);
-  assert.match(source, /watchnest-shell-v4/);
+  assert.match(source, /watchnest-shell-v5/);
   assert.doesNotMatch(source, /caches\.match\(request\)\.then\(\(cached\) => cached \|\| fetch/);
   assert.match(source, /fetch\(request\).*\.catch\(\(\) => caches\.match\(request\)/s);
   assert.match(source, /request\.mode === 'navigate'[\s\S]*fetch\(request\)\.catch\(\(\) => caches\.match\('\/index\.html'\)\)/);
@@ -21,9 +21,9 @@ test('service worker precaches the shell and never handles API requests', () => 
 test('the boot asset bypasses an obsolete worker and upgrades controlled pages', () => {
   const html = fs.readFileSync(path.join(__dirname, '..', 'public', 'index.html'), 'utf8');
   const app = fs.readFileSync(path.join(__dirname, '..', 'public', 'app.js'), 'utf8');
-  assert.match(html, /app\.js\?v=20260826-4/);
+  assert.match(html, /app\.js\?v=20260826-5/);
   assert.match(html, /serviceWorker\.addEventListener\('controllerchange'/);
-  assert.match(app, /register\('\/sw\.js\?v=20260826-4'\)/);
+  assert.match(app, /register\('\/sw\.js\?v=20260826-5'\)/);
 });
 
 test('proposal manifest covers every major screen and the stale-device warning', () => {
@@ -51,4 +51,15 @@ test('search-only catalog results participate in action identity lookup', () => 
   const findMedia = source.slice(start, end);
   assert.ok(start >= 0 && end > start);
   assert.match(findMedia, /ui\.searchResults\.find\(\(item\) => item\.key === key\)/);
+});
+
+test('typing refreshes only search results and rejects stale responses', () => {
+  const source = fs.readFileSync(path.join(__dirname, '..', 'public', 'app.js'), 'utf8');
+  const start = source.indexOf("document.addEventListener('input'");
+  const end = source.indexOf("importEl.addEventListener('change'", start);
+  const inputHandler = source.slice(start, end);
+  assert.ok(start >= 0 && end > start);
+  assert.doesNotMatch(inputHandler, /\brender\(\)/);
+  assert.match(inputHandler, /refreshDiscoverResults\(\)/);
+  assert.match(inputHandler, /ui\.query !== query \|\| ui\.discoverType !== type/);
 });
