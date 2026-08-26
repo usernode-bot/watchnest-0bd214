@@ -1,0 +1,5 @@
+node_modules/
+public/tailwind.css
+.env
+.env.*
+*.log

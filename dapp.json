@@ -1,3 +1,43 @@
 {
-  "secrets": []
+  "name": "WatchNest",
+  "icon": "🪺",
+  "secrets": [],
+  "tests": [
+    {
+      "name": "Watch Next home renders",
+      "path": "/?demo=1&screen=home",
+      "expectSelector": "[data-screen=home]",
+      "expectText": "Watch next"
+    },
+    {
+      "name": "Discover renders all media types",
+      "path": "/?demo=1&screen=discover",
+      "expectSelector": "[data-screen=discover]",
+      "expectText": "Movies, shows & anime"
+    },
+    {
+      "name": "Library and title progress render",
+      "path": "/?demo=1&screen=library&detail=tvmaze%3A101",
+      "expectSelector": "[data-screen=detail]",
+      "expectText": "Episodes"
+    },
+    {
+      "name": "Upcoming calendar renders",
+      "path": "/?demo=1&screen=upcoming",
+      "expectSelector": "[data-screen=upcoming]",
+      "expectText": "Your upcoming"
+    },
+    {
+      "name": "Private stats and data controls render",
+      "path": "/?demo=1&screen=profile",
+      "expectSelector": "[data-screen=profile]",
+      "expectText": "Your watch time"
+    },
+    {
+      "name": "Newer-device warning stays visible",
+      "path": "/?demo=1&screen=library&stale=1",
+      "expectSelector": "[data-remote-ahead-warning]",
+      "expectText": "Another device has newer data"
+    }
+  ]
 }

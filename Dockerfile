@@ -19,8 +19,8 @@ RUN npm install tailwindcss@3.4.17 --no-audit --no-fund \
 # Stage 2 — the app itself (unchanged apart from the one COPY at the end).
 FROM node:22-alpine
 WORKDIR /app
-COPY package.json ./
-RUN npm install --production
+COPY package.json package-lock.json ./
+RUN npm ci --omit=dev
 COPY . .
 # After COPY . . so the compiled stylesheet is not overwritten by the
 # source tree (which deliberately does not contain one).

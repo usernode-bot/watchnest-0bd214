@@ -1,27 +1,47 @@
 # WatchNest
 
-> **Starter template** — this repo was scaffolded by Usernode Social
-> Vibecoding. Everything in it is placeholder example code until the
-> app's first real feature is built.
+WatchNest is a mobile-first personal tracker for movies, television shows,
+and anime. It brings the core TV Time workflow to Usernode: discover titles,
+build a watchlist, mark episodes or whole seasons watched, see the next
+episode, follow upcoming releases, and review private viewing stats.
 
-The scaffold is a small working demo that proves the plumbing works:
+## Privacy model
 
-- **Sign-in** — the server verifies the platform-issued user token
-  (an RS256 JWT) on every request, so the app already knows who is
-  using it. No accounts to build.
-- **Database** — the app has its own private Postgres database; the
-  demo stores button presses in a `presses` table.
-- **Live API** — two example routes (`/api/press`,
-  `/api/leaderboard`) read and write through a real Express server.
-- **Styling** — Tailwind CSS, precompiled by the Dockerfile on every
-  deploy, so there is nothing to rebuild by hand.
+The browser is the source of truth. Library membership, episode and movie
+history, ratings, favorites, preferences, cached title metadata, and exports
+live only in a Usernode-user-namespaced IndexedDB database.
 
-## Replacing the template
+The backend stores one number per user in `user_change_clock`: the timestamp
+of the most recent browser mutation. On launch, WatchNest compares that number
+with the local clock. A larger backend number means another device changed its
+private library more recently, so WatchNest shows a sticky warning on every
+screen. No title, episode, rating, username, search, or device data is sent to
+Postgres.
 
-Open the app on Usernode, tap **Improve** in the header, and describe
-the app you want in plain English — the template will be replaced with
-your real app. You can also run Claude Code against this repo directly;
-start with `CLAUDE.md`, which carries the app-specific notes and
-points at the platform rules.
+## Catalogs
 
-Once the real app exists, rewrite this README to describe it.
+The Express server performs non-persistent, authenticated reads from keyless
+public catalogs:
+
+- TVMaze for shows and episode guides;
+- Jikan for anime and episode guides;
+- Wikidata entity search for movies.
+
+A bundled catalog keeps the first-run, staging, offline, and provider-error
+experience useful. Catalog responses are never written to the backend.
+
+## Development
+
+```bash
+npm install
+npm test
+npm start
+```
+
+Runtime requires the standard Usernode variables: `DATABASE_URL`,
+`USERNODE_JWT_PUBLIC_KEY`, `USERNODE_APP_ID`, `USERNODE_ENV`, and `PORT`.
+Tailwind is compiled during the Docker image build. Do not commit
+`public/tailwind.css`.
+
+The app loads the Usernode bridge and native UI kit from the platform origin.
+Do not vendor those centrally managed files.
