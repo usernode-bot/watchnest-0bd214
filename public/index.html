@@ -9,6 +9,20 @@
   <link rel="stylesheet" href="https://social-vibecoding.usernodelabs.org/usernode-native/v1/native.css">
   <link rel="stylesheet" href="/tailwind.css">
   <script>
+  // A previous WatchNest worker cached app.js forever. The versioned boot
+  // asset bypasses that cache; this reload swaps an already-open client onto
+  // the new network-first worker as soon as it claims the page.
+  (function () {
+    if (!('serviceWorker' in navigator) || !navigator.serviceWorker.controller) return;
+    navigator.serviceWorker.addEventListener('controllerchange', function () {
+      var key = 'watchnest:worker-reload:20260826-3';
+      if (sessionStorage.getItem(key)) return;
+      sessionStorage.setItem(key, '1');
+      location.reload();
+    });
+  })();
+  </script>
+  <script>
   // usernode-dev-console@1
   (function () {
     if (window.__usernodeDevConsole) return;
@@ -46,7 +60,7 @@
   <script defer src="/domain.js"></script>
   <script defer src="/catalog.js"></script>
   <script defer src="/store.js"></script>
-  <script defer src="/app.js"></script>
+  <script defer src="/app.js?v=20260826-3"></script>
 </head>
 <body>
   <div id="app-shell" class="app-shell">

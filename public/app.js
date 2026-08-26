@@ -475,7 +475,9 @@
     }
     render();
     await store.checkRemoteClock();
-    if ('serviceWorker' in navigator && !demo) navigator.serviceWorker.register('/sw.js').catch(() => undefined);
+    if ('serviceWorker' in navigator && !demo) {
+      navigator.serviceWorker.register('/sw.js?v=20260826-3').then((registration) => registration.update()).catch(() => undefined);
+    }
     if (window.unNative?.attachPullToRefresh) window.unNative.attachPullToRefresh(screenEl, async () => { ui.catalogItems = await catalog.discover(); render(); }, { topEl:document.getElementById('top-bar') });
     if (window.unNative?.attachKeyboardAvoidance) window.unNative.attachKeyboardAvoidance(screenEl, { topEl:document.getElementById('top-bar') });
   }

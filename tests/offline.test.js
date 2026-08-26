@@ -8,10 +8,22 @@ const path = require('node:path');
 test('service worker precaches the shell and never handles API requests', () => {
   const source = fs.readFileSync(path.join(__dirname, '..', 'public', 'sw.js'), 'utf8');
   assert.match(source, /'\/index\.html'/);
+  assert.match(source, /watchnest-shell-v3/);
+  assert.doesNotMatch(source, /caches\.match\(request\)\.then\(\(cached\) => cached \|\| fetch/);
+  assert.match(source, /fetch\(request\).*\.catch\(\(\) => caches\.match\(request\)/s);
+  assert.match(source, /request\.mode === 'navigate'[\s\S]*fetch\(request\)\.catch\(\(\) => caches\.match\('\/index\.html'\)\)/);
   assert.match(source, /url\.pathname\.startsWith\('\/api\/'\)/);
   assert.match(source, /request\.method !== 'GET'/);
   const shellBlock = source.slice(source.indexOf('const SHELL'), source.indexOf('];', source.indexOf('const SHELL')));
   assert.doesNotMatch(shellBlock, /\/api\//);
+});
+
+test('the boot asset bypasses an obsolete worker and upgrades controlled pages', () => {
+  const html = fs.readFileSync(path.join(__dirname, '..', 'public', 'index.html'), 'utf8');
+  const app = fs.readFileSync(path.join(__dirname, '..', 'public', 'app.js'), 'utf8');
+  assert.match(html, /app\.js\?v=20260826-3/);
+  assert.match(html, /serviceWorker\.addEventListener\('controllerchange'/);
+  assert.match(app, /register\('\/sw\.js\?v=20260826-3'\)/);
 });
 
 test('proposal manifest covers every major screen and the stale-device warning', () => {

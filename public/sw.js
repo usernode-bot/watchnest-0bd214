@@ -1,13 +1,13 @@
 'use strict';
 
-const CACHE = 'watchnest-shell-v1';
+const CACHE = 'watchnest-shell-v3';
 const SHELL = [
   '/index.html',
   '/tailwind.css',
   '/domain.js',
   '/catalog.js',
   '/store.js',
-  '/app.js',
+  '/app.js?v=20260826-3',
   '/fallback-catalog.json',
 ];
 
@@ -28,18 +28,20 @@ self.addEventListener('fetch', (event) => {
   const url = new URL(request.url);
   if (request.method !== 'GET' || url.origin !== self.location.origin || url.pathname.startsWith('/api/')) return;
 
+  // Never cache authenticated navigation URLs because the iframe token lives
+  // in their query string. The uncredentialed shell remains the offline fallback.
   if (request.mode === 'navigate') {
     event.respondWith(fetch(request).catch(() => caches.match('/index.html')));
     return;
   }
 
   event.respondWith(
-    caches.match(request).then((cached) => cached || fetch(request).then((response) => {
+    fetch(request).then((response) => {
       if (response.ok) {
         const copy = response.clone();
         caches.open(CACHE).then((cache) => cache.put(request, copy));
       }
       return response;
-    }))
+    }).catch(() => caches.match(request).then((cached) => cached || Response.error()))
   );
 });
