@@ -307,7 +307,10 @@
   }
 
   function findMedia(key) {
-    return store.state.library[key]?.media || ui.catalogItems.find((item) => item.key === key) || catalog.find(key);
+    return store.state.library[key]?.media
+      || ui.catalogItems.find((item) => item.key === key)
+      || ui.searchResults.find((item) => item.key === key)
+      || catalog.find(key);
   }
 
   async function openDetail(key, fromEl) {
@@ -476,7 +479,7 @@
     render();
     await store.checkRemoteClock();
     if ('serviceWorker' in navigator && !demo) {
-      navigator.serviceWorker.register('/sw.js?v=20260826-3').then((registration) => registration.update()).catch(() => undefined);
+      navigator.serviceWorker.register('/sw.js?v=20260826-4').then((registration) => registration.update()).catch(() => undefined);
     }
     if (window.unNative?.attachPullToRefresh) window.unNative.attachPullToRefresh(screenEl, async () => { ui.catalogItems = await catalog.discover(); render(); }, { topEl:document.getElementById('top-bar') });
     if (window.unNative?.attachKeyboardAvoidance) window.unNative.attachKeyboardAvoidance(screenEl, { topEl:document.getElementById('top-bar') });
