@@ -21,3 +21,13 @@ test('proposal manifest covers every major screen and the stale-device warning',
   assert.match(paths, /stale=1/);
   assert.ok(manifest.tests.every((entry) => entry.expectSelector));
 });
+
+test('the add action saves locally before waiting for episode hydration', () => {
+  const source = fs.readFileSync(path.join(__dirname, '..', 'public', 'app.js'), 'utf8');
+  const start = source.indexOf('async function addMedia');
+  const end = source.indexOf('async function chooseStatus', start);
+  const addMedia = source.slice(start, end);
+  assert.ok(start >= 0 && end > start);
+  assert.ok(addMedia.indexOf("store.dispatch({ type:'ADD_MEDIA', media })") < addMedia.indexOf('hydrateAddedMedia(media)'));
+  assert.match(addMedia, /void hydrateAddedMedia\(media\)\.catch/);
+});

@@ -327,12 +327,23 @@
     else mutation();
   }
 
+  async function hydrateAddedMedia(media) {
+    const hydrated = await catalog.episodes(media);
+    const entry = store.state.library[media.key];
+    if (!entry) return;
+    const previous = JSON.stringify(entry.media.episodes || []);
+    const next = JSON.stringify(hydrated.episodes || []);
+    if (previous !== next) await store.dispatch({ type:'UPDATE_MEDIA', media:hydrated });
+  }
+
   async function addMedia(key) {
-    let media = findMedia(key);
-    if (!media) return;
-    media = await catalog.episodes(media);
+    const media = findMedia(key);
+    if (!media) return notify('That title is unavailable');
+
+    // Save first so the control responds even when a live episode provider is slow.
     await store.dispatch({ type:'ADD_MEDIA', media });
     notify(`${media.title} added to your nest`);
+    void hydrateAddedMedia(media).catch(() => undefined);
   }
 
   async function chooseStatus(key, anchorEl) {
