@@ -1,0 +1,179 @@
+{
+  "items": [
+    {
+      "key": "tvmaze:101",
+      "id": "101",
+      "source": "tvmaze",
+      "type": "show",
+      "title": "Northern Signal",
+      "year": 2025,
+      "status": "Running",
+      "genres": ["Mystery", "Drama"],
+      "runtime": 48,
+      "synopsis": "A radio operator in a remote Arctic town begins receiving broadcasts from seven days in the future.",
+      "rating": 8.7,
+      "episodes": [
+        { "id": "tvmaze:10101", "sourceId": "10101", "season": 1, "number": 1, "title": "Dead Air", "offsetDays": -42, "runtime": 48 },
+        { "id": "tvmaze:10102", "sourceId": "10102", "season": 1, "number": 2, "title": "White Noise", "offsetDays": -35, "runtime": 47 },
+        { "id": "tvmaze:10103", "sourceId": "10103", "season": 1, "number": 3, "title": "The Seventh Day", "offsetDays": -28, "runtime": 51 },
+        { "id": "tvmaze:10104", "sourceId": "10104", "season": 1, "number": 4, "title": "Long Night", "offsetDays": -21, "runtime": 49 },
+        { "id": "tvmaze:10105", "sourceId": "10105", "season": 1, "number": 5, "title": "Open Channel", "offsetDays": -7, "runtime": 50 },
+        { "id": "tvmaze:10106", "sourceId": "10106", "season": 1, "number": 6, "title": "The Aurora", "offsetDays": 1, "runtime": 52 },
+        { "id": "tvmaze:10107", "sourceId": "10107", "season": 1, "number": 7, "title": "Signal Lost", "offsetDays": 8, "runtime": 50 }
+      ]
+    },
+    {
+      "key": "tvmaze:102",
+      "id": "102",
+      "source": "tvmaze",
+      "type": "show",
+      "title": "The Last Bookshop",
+      "year": 2024,
+      "status": "Running",
+      "genres": ["Comedy", "Drama"],
+      "runtime": 30,
+      "synopsis": "Three friends try to keep a neighborhood bookshop alive while their lives are rewritten around them.",
+      "rating": 8.1,
+      "episodes": [
+        { "id": "tvmaze:10201", "sourceId": "10201", "season": 1, "number": 1, "title": "New Arrivals", "offsetDays": -70, "runtime": 29 },
+        { "id": "tvmaze:10202", "sourceId": "10202", "season": 1, "number": 2, "title": "Dog-Eared", "offsetDays": -63, "runtime": 31 },
+        { "id": "tvmaze:10203", "sourceId": "10203", "season": 1, "number": 3, "title": "The Reading", "offsetDays": -56, "runtime": 30 },
+        { "id": "tvmaze:10204", "sourceId": "10204", "season": 1, "number": 4, "title": "First Edition", "offsetDays": -49, "runtime": 32 }
+      ]
+    },
+    {
+      "key": "tvmaze:103",
+      "id": "103",
+      "source": "tvmaze",
+      "type": "show",
+      "title": "Blue Hour",
+      "year": 2026,
+      "status": "Running",
+      "genres": ["Crime", "Thriller"],
+      "runtime": 44,
+      "synopsis": "Every dawn, a detective has one hour to solve the case she dreamed the night before.",
+      "rating": 8.4,
+      "episodes": [
+        { "id": "tvmaze:10301", "sourceId": "10301", "season": 1, "number": 1, "title": "Before Sunrise", "offsetDays": -14, "runtime": 44 },
+        { "id": "tvmaze:10302", "sourceId": "10302", "season": 1, "number": 2, "title": "The Red Door", "offsetDays": -7, "runtime": 45 },
+        { "id": "tvmaze:10303", "sourceId": "10303", "season": 1, "number": 3, "title": "False Morning", "offsetDays": 2, "runtime": 46 }
+      ]
+    },
+    {
+      "key": "jikan:201",
+      "id": "201",
+      "source": "jikan",
+      "type": "anime",
+      "title": "Paper Moons",
+      "year": 2026,
+      "status": "Currently Airing",
+      "genres": ["Adventure", "Fantasy"],
+      "runtime": 24,
+      "synopsis": "A mapmaker folds paper moons that open doorways to worlds missing from every atlas.",
+      "rating": 8.9,
+      "episodes": [
+        { "id": "jikan:20101", "sourceId": "20101", "season": 1, "number": 1, "title": "The First Fold", "offsetDays": -28, "runtime": 24 },
+        { "id": "jikan:20102", "sourceId": "20102", "season": 1, "number": 2, "title": "Ink Sea", "offsetDays": -21, "runtime": 24 },
+        { "id": "jikan:20103", "sourceId": "20103", "season": 1, "number": 3, "title": "A City Without North", "offsetDays": -14, "runtime": 24 },
+        { "id": "jikan:20104", "sourceId": "20104", "season": 1, "number": 4, "title": "Silver Crease", "offsetDays": -7, "runtime": 24 },
+        { "id": "jikan:20105", "sourceId": "20105", "season": 1, "number": 5, "title": "The Atlas Door", "offsetDays": 3, "runtime": 24 }
+      ]
+    },
+    {
+      "key": "jikan:202",
+      "id": "202",
+      "source": "jikan",
+      "type": "anime",
+      "title": "Neon Kitchen",
+      "year": 2025,
+      "status": "Finished Airing",
+      "genres": ["Comedy", "Slice of Life"],
+      "runtime": 22,
+      "synopsis": "A midnight diner serves impossible comfort food to the night-shift workers of a restless city.",
+      "rating": 8.3,
+      "episodes": [
+        { "id": "jikan:20201", "sourceId": "20201", "season": 1, "number": 1, "title": "After Hours", "offsetDays": -140, "runtime": 22 },
+        { "id": "jikan:20202", "sourceId": "20202", "season": 1, "number": 2, "title": "Rain Broth", "offsetDays": -133, "runtime": 22 },
+        { "id": "jikan:20203", "sourceId": "20203", "season": 1, "number": 3, "title": "Last Train Curry", "offsetDays": -126, "runtime": 22 },
+        { "id": "jikan:20204", "sourceId": "20204", "season": 1, "number": 4, "title": "Sunrise Special", "offsetDays": -119, "runtime": 22 }
+      ]
+    },
+    {
+      "key": "jikan:203",
+      "id": "203",
+      "source": "jikan",
+      "type": "anime",
+      "title": "Orbit Club",
+      "year": 2026,
+      "status": "Currently Airing",
+      "genres": ["Sci-Fi", "Drama"],
+      "runtime": 25,
+      "synopsis": "Five students repair an abandoned observatory and discover something is answering their telescope.",
+      "rating": 8.6,
+      "episodes": [
+        { "id": "jikan:20301", "sourceId": "20301", "season": 1, "number": 1, "title": "First Light", "offsetDays": -7, "runtime": 25 },
+        { "id": "jikan:20302", "sourceId": "20302", "season": 1, "number": 2, "title": "The Reply", "offsetDays": 5, "runtime": 25 }
+      ]
+    },
+    {
+      "key": "wikidata:Q301",
+      "id": "Q301",
+      "source": "wikidata",
+      "type": "movie",
+      "title": "The Glass Orchard",
+      "year": 2026,
+      "status": "Upcoming",
+      "genres": ["Drama", "Romance"],
+      "runtime": 112,
+      "synopsis": "An architect returns home to restore a greenhouse and the family history hidden inside it.",
+      "rating": 7.9,
+      "releaseOffsetDays": 18,
+      "episodes": []
+    },
+    {
+      "key": "wikidata:Q302",
+      "id": "Q302",
+      "source": "wikidata",
+      "type": "movie",
+      "title": "Static Bloom",
+      "year": 2025,
+      "status": "Released",
+      "genres": ["Science Fiction", "Drama"],
+      "runtime": 124,
+      "synopsis": "A botanist discovers that a flower's electrical patterns preserve the memories of anyone who touches it.",
+      "rating": 8.2,
+      "releaseOffsetDays": -180,
+      "episodes": []
+    },
+    {
+      "key": "wikidata:Q303",
+      "id": "Q303",
+      "source": "wikidata",
+      "type": "movie",
+      "title": "One More Summer",
+      "year": 2026,
+      "status": "Upcoming",
+      "genres": ["Comedy"],
+      "runtime": 101,
+      "synopsis": "Four childhood friends attempt to recreate the perfect summer and discover none of them remember it the same way.",
+      "rating": 7.6,
+      "releaseOffsetDays": 42,
+      "episodes": []
+    },
+    {
+      "key": "wikidata:Q304",
+      "id": "Q304",
+      "source": "wikidata",
+      "type": "movie",
+      "title": "Night Ferry",
+      "year": 2024,
+      "status": "Released",
+      "genres": ["Mystery", "Thriller"],
+      "runtime": 108,
+      "synopsis": "Passengers on the final ferry realize their destination disappeared from every map before they left port.",
+      "rating": 8.0,
+      "releaseOffsetDays": -360,
+      "episodes": []
+    }
+  ]
+}
