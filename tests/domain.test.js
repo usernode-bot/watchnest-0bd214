@@ -107,3 +107,14 @@ test('import validates account ownership before replacing current local data', (
   assert.equal(imported.library['tvmaze:1'].media.title, 'Test Show');
   assert.equal(imported.meta.pendingClock, true);
 });
+
+test('guest import accepts an explicit export from any account into the guest namespace', () => {
+  let signed = Domain.reduce(Domain.createInitialState('7'), { type:'ADD_MEDIA', media:show() }, now);
+  const imported = Domain.reduce(
+    Domain.createInitialState('guest'),
+    { type:'IMPORT_STATE', value:Domain.exportState(signed) },
+    now + 1
+  );
+  assert.equal(imported.userId, 'guest');
+  assert.equal(imported.library['tvmaze:1'].media.title, 'Test Show');
+});

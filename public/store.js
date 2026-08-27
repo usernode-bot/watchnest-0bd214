@@ -2,7 +2,7 @@
   'use strict';
 
   const Domain = root.WatchNestDomain;
-  const LAST_USER_KEY = 'watchnest:last-user-id';
+  const GUEST_USER_ID = 'guest';
 
   function decodeTokenUserId(token) {
     if (!token) return null;
@@ -13,14 +13,6 @@
     } catch {
       return null;
     }
-  }
-
-  function rememberedUserId() {
-    try { return localStorage.getItem(LAST_USER_KEY); } catch { return null; }
-  }
-
-  function rememberUserId(userId) {
-    try { localStorage.setItem(LAST_USER_KEY, String(userId)); } catch {}
   }
 
   function openDatabase(userId) {
@@ -57,10 +49,12 @@
       this.token = token || '';
       this.demo = Boolean(demo);
       this.forceStale = Boolean(forceStale);
-      this.userId = this.demo ? 'demo' : (decodeTokenUserId(this.token) || rememberedUserId());
+      const tokenUserId = decodeTokenUserId(this.token);
+      this.isGuest = !this.demo && !tokenUserId;
+      this.userId = this.demo ? 'demo' : (tokenUserId || GUEST_USER_ID);
       this.db = null;
       this.state = null;
-      this.remoteAhead = this.forceStale;
+      this.remoteAhead = this.isGuest ? false : this.forceStale;
       this.listeners = new Set();
       this.clockQueue = Promise.resolve();
       this.storageAvailable = true;
@@ -80,12 +74,10 @@
     }
 
     async initialize() {
-      if (!this.userId) throw new Error('Reconnect once to unlock your local WatchNest library');
       if (this.demo) {
         this.state = Domain.createInitialState(this.userId);
         return this.state;
       }
-      rememberUserId(this.userId);
       try {
         this.db = await openDatabase(this.userId);
         const stored = await dbGet(this.db, 'app');
@@ -140,6 +132,11 @@
         this.emit();
         return;
       }
+      if (this.isGuest) {
+        this.remoteAhead = false;
+        this.emit();
+        return;
+      }
       if (!this.token || !navigator.onLine) return;
       try {
         const response = await fetch('/api/change-clock', { headers: this.headers() });
@@ -153,6 +150,7 @@
 
     async dispatch(action) {
       this.state = Domain.reduce(this.state, action);
+      if (this.isGuest) this.state.meta.pendingClock = false;
       await this.persist();
       this.emit();
       this.queueClock();
@@ -160,12 +158,12 @@
     }
 
     queueClock() {
-      if (this.demo) return;
+      if (this.demo || this.isGuest) return;
       this.clockQueue = this.clockQueue.then(() => this.pushClock()).catch(() => undefined);
     }
 
     async pushClock() {
-      if (!this.token || !navigator.onLine) return;
+      if (this.isGuest || !this.token || !navigator.onLine) return;
       const response = await fetch('/api/change-clock', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json', ...this.headers() },
@@ -194,5 +192,6 @@
   root.WatchNestStore = {
     WatchNestStore,
     decodeTokenUserId,
+    GUEST_USER_ID,
   };
 })(window);
