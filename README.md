@@ -9,14 +9,16 @@ episode, follow upcoming releases, and review private viewing stats.
 
 The browser is the source of truth. Library membership, episode and movie
 history, ratings, favorites, preferences, cached title metadata, and exports
-live only in a Usernode-user-namespaced IndexedDB database.
+live only in IndexedDB. Signed-in libraries are namespaced by Usernode user;
+guest libraries use a separate browser-local namespace.
 
-The backend stores one number per user in `user_change_clock`: the timestamp
-of the most recent browser mutation. On launch, WatchNest compares that number
-with the local clock. A larger backend number means another device changed its
-private library more recently, so WatchNest shows a sticky warning on every
-screen. No title, episode, rating, username, search, or device data is sent to
-Postgres.
+For signed-in users, the backend stores one number per user in
+`user_change_clock`: the timestamp of the most recent browser mutation. On
+launch, WatchNest compares that number with the local clock. A larger backend
+number means another device changed its private library more recently, so
+WatchNest shows a sticky warning on every screen. Guest mode keeps every app
+feature except this newer-device detection. No title, episode, rating,
+username, search, or device data is sent to Postgres.
 
 Each browser also shows a one-time, per-user notice that viewing data does not
 sync between devices. Its acknowledgement stays in that browser only and does
@@ -25,8 +27,9 @@ path between devices.
 
 ## Catalogs
 
-The Express server performs non-persistent, authenticated reads from keyless
-public catalogs:
+The Express server performs non-persistent read-through access to keyless
+public catalogs. These read-only catalog transports are also available to
+guest sessions; all library and progress changes still happen locally:
 
 - TVMaze for shows and episode guides;
 - Jikan for anime and episode guides;

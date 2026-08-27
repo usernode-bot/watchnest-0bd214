@@ -44,6 +44,12 @@
       "path": "/?demo=1&screen=home&local-only=1",
       "expectSelector": "[data-device-only-notice]",
       "expectText": "Viewing data does not sync between devices"
+    },
+    {
+      "name": "Guest mode keeps every local feature",
+      "path": "/?guest=1&screen=profile",
+      "expectSelector": "[data-screen=profile]",
+      "expectText": "Only newer-device detection requires an account"
     }
   ]
 }

@@ -4,6 +4,7 @@
   const Domain = root.WatchNestDomain;
   const LAST_USER_KEY = 'watchnest:last-user-id';
   const DEVICE_NOTICE_KEY_PREFIX = 'watchnest:device-only-ack:';
+  const GUEST_USER_ID = 'guest';
 
   function decodeTokenUserId(token) {
     if (!token) return null;
@@ -71,12 +72,14 @@
       this.demo = Boolean(demo);
       this.forceStale = Boolean(forceStale);
       this.forceDeviceNotice = Boolean(forceDeviceNotice);
-      this.userId = this.demo ? 'demo' : (decodeTokenUserId(this.token) || rememberedUserId());
+      const authenticatedUserId = decodeTokenUserId(this.token) || rememberedUserId();
+      this.isGuest = !this.demo && !authenticatedUserId;
+      this.userId = this.demo ? 'demo' : (authenticatedUserId || GUEST_USER_ID);
       this.db = null;
       this.state = null;
-      this.remoteAhead = this.forceStale;
+      this.remoteAhead = this.isGuest ? false : this.forceStale;
       this.deviceOnlyNoticeVisible = this.forceDeviceNotice
-        || (!this.demo && Boolean(this.userId) && !deviceNoticeAcknowledged(this.userId));
+        || (!this.demo && !this.isGuest && !deviceNoticeAcknowledged(this.userId));
       this.listeners = new Set();
       this.clockQueue = Promise.resolve();
       this.storageAvailable = true;
@@ -102,12 +105,11 @@
     }
 
     async initialize() {
-      if (!this.userId) throw new Error('Reconnect once to unlock your local WatchNest library');
       if (this.demo) {
         this.state = Domain.createInitialState(this.userId);
         return this.state;
       }
-      rememberUserId(this.userId);
+      if (!this.isGuest) rememberUserId(this.userId);
       try {
         this.db = await openDatabase(this.userId);
         const stored = await dbGet(this.db, 'app');
@@ -162,6 +164,11 @@
         this.emit();
         return;
       }
+      if (this.isGuest) {
+        this.remoteAhead = false;
+        this.emit();
+        return;
+      }
       if (!this.token || !navigator.onLine) return;
       try {
         const response = await fetch('/api/change-clock', { headers: this.headers() });
@@ -175,6 +182,7 @@
 
     async dispatch(action) {
       this.state = Domain.reduce(this.state, action);
+      if (this.isGuest) this.state.meta.pendingClock = false;
       await this.persist();
       this.emit();
       this.queueClock();
@@ -182,12 +190,12 @@
     }
 
     queueClock() {
-      if (this.demo) return;
+      if (this.demo || this.isGuest) return;
       this.clockQueue = this.clockQueue.then(() => this.pushClock()).catch(() => undefined);
     }
 
     async pushClock() {
-      if (!this.token || !navigator.onLine) return;
+      if (this.isGuest || !this.token || !navigator.onLine) return;
       const response = await fetch('/api/change-clock', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json', ...this.headers() },
@@ -217,5 +225,6 @@
     WatchNestStore,
     decodeTokenUserId,
     deviceNoticeKey,
+    GUEST_USER_ID,
   };
 })(window);

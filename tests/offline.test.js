@@ -32,6 +32,7 @@ test('proposal manifest covers every major screen and the stale-device warning',
   for (const screen of ['home', 'discover', 'library', 'upcoming', 'profile']) assert.match(paths, new RegExp(`screen=${screen}`));
   assert.match(paths, /stale=1/);
   assert.match(paths, /local-only=1/);
+  assert.match(paths, /guest=1/);
   assert.ok(manifest.tests.every((entry) => entry.expectSelector));
 });
 
@@ -54,6 +55,12 @@ test('remote clock check starts before live catalog discovery', () => {
   assert.ok(initialize.indexOf('render()') < initialize.indexOf('store.checkRemoteClock()'));
 });
 
+test('guest mode is explicit and only newer-device detection is unavailable', () => {
+  const source = fs.readFileSync(path.join(__dirname, '..', 'public', 'app.js'), 'utf8');
+  assert.match(source, /params\.get\('guest'\) === '1'/);
+  assert.match(source, /Only newer-device detection requires an account/);
+  assert.match(source, /Unavailable without an account/);
+});
 test('the add action saves locally before waiting for episode hydration', () => {
   const source = fs.readFileSync(path.join(__dirname, '..', 'public', 'app.js'), 'utf8');
   const start = source.indexOf('async function addMedia');
