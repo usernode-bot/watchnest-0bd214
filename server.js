@@ -6,9 +6,12 @@ const { Pool } = require('pg');
 const jwt = require('jsonwebtoken');
 
 const DEFAULT_PORT = Number(process.env.PORT) || 3000;
-const PLATFORM_ORIGIN = 'https://social-vibecoding.usernodelabs.org';
-const APP_SLUG = 'watchnest-0bd214';
-const PUBLIC_API_PATHS = new Set(['/health']);
+const PUBLIC_GET_PATHS = new Set([
+  '/health',
+  '/api/catalog/discover',
+  '/api/catalog/search',
+  '/api/catalog/episodes',
+]);
 const CATALOG_TYPES = new Set(['show', 'anime', 'movie']);
 const CATALOG_SOURCES = new Set(['tvmaze', 'jikan']);
 
@@ -158,7 +161,7 @@ function createAuthMiddleware({ publicKey, audience, authenticate } = {}) {
     }
 
     if (req.method !== 'GET' || req.path.startsWith('/api/')) {
-      if (PUBLIC_API_PATHS.has(req.path)) return next();
+      if (req.method === 'GET' && PUBLIC_GET_PATHS.has(req.path)) return next();
       if (!req.user) return res.status(401).json({ error: 'Not authenticated' });
     }
     next();
@@ -294,17 +297,6 @@ function createApp({ pool, fetchImpl = global.fetch, auth = {} } = {}) {
   app.use(express.static(path.join(__dirname, 'public'), { index: false }));
 
   app.get('*', (req, res) => {
-    if (!req.user) {
-      const deepPath = /^\/[A-Za-z0-9\-._~!$&()*+,;=:@\/%?]*$/.test(req.originalUrl)
-        ? `?path=${req.originalUrl}` : '';
-      const platformUrl = `${PLATFORM_ORIGIN}/#app/${APP_SLUG}/full${deepPath}`;
-      if (req.get('sec-fetch-dest') === 'document') return res.redirect(302, platformUrl);
-      return res.status(401).send(`<!doctype html><meta charset="utf-8"><title>Open in Usernode</title>
-<body style="font-family:system-ui;background:#070b14;color:#f7f5ee;display:flex;align-items:center;justify-content:center;min-height:100vh;margin:0">
-<main style="max-width:24rem;padding:2rem;text-align:center"><h1>Open WatchNest in Usernode</h1>
-<p style="color:#91a0b8">WatchNest uses your platform identity to keep each browser's private library separate.</p>
-<a href="${platformUrl}" style="display:inline-block;padding:.7rem 1rem;background:#f6b94a;color:#111827;border-radius:.8rem;text-decoration:none;font-weight:700">Open WatchNest</a></main></body>`);
-    }
     res.sendFile(path.join(__dirname, 'public', 'index.html'));
   });
 

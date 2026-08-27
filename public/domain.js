@@ -322,7 +322,8 @@
 
   function validateImport(value, currentUserId) {
     if (!value || typeof value !== 'object' || value.schemaVersion !== SCHEMA_VERSION) throw new Error('Unsupported WatchNest export');
-    if (String(value.userId) !== String(currentUserId)) throw new Error('This export belongs to a different Usernode account');
+    const importingAsGuest = String(currentUserId) === 'guest';
+    if (!importingAsGuest && String(value.userId) !== String(currentUserId)) throw new Error('This export belongs to a different Usernode account');
     if (!value.library || typeof value.library !== 'object' || Array.isArray(value.library)) throw new Error('Invalid library data');
     const clean = createInitialState(currentUserId);
     const entries = Object.values(value.library);

@@ -8,7 +8,7 @@ const path = require('node:path');
 test('service worker precaches the shell and never handles API requests', () => {
   const source = fs.readFileSync(path.join(__dirname, '..', 'public', 'sw.js'), 'utf8');
   assert.match(source, /'\/index\.html'/);
-  assert.match(source, /watchnest-shell-v5/);
+  assert.match(source, /watchnest-shell-v6/);
   assert.doesNotMatch(source, /caches\.match\(request\)\.then\(\(cached\) => cached \|\| fetch/);
   assert.match(source, /fetch\(request\).*\.catch\(\(\) => caches\.match\(request\)/s);
   assert.match(source, /request\.mode === 'navigate'[\s\S]*fetch\(request\)\.catch\(\(\) => caches\.match\('\/index\.html'\)\)/);
@@ -21,9 +21,9 @@ test('service worker precaches the shell and never handles API requests', () => 
 test('the boot asset bypasses an obsolete worker and upgrades controlled pages', () => {
   const html = fs.readFileSync(path.join(__dirname, '..', 'public', 'index.html'), 'utf8');
   const app = fs.readFileSync(path.join(__dirname, '..', 'public', 'app.js'), 'utf8');
-  assert.match(html, /app\.js\?v=20260826-5/);
+  assert.match(html, /app\.js\?v=20260827-6/);
   assert.match(html, /serviceWorker\.addEventListener\('controllerchange'/);
-  assert.match(app, /register\('\/sw\.js\?v=20260826-5'\)/);
+  assert.match(app, /register\('\/sw\.js\?v=20260827-6'\)/);
 });
 
 test('proposal manifest covers every major screen and the stale-device warning', () => {
@@ -31,9 +31,16 @@ test('proposal manifest covers every major screen and the stale-device warning',
   const paths = manifest.tests.map((entry) => entry.path).join('\n');
   for (const screen of ['home', 'discover', 'library', 'upcoming', 'profile']) assert.match(paths, new RegExp(`screen=${screen}`));
   assert.match(paths, /stale=1/);
+  assert.match(paths, /guest=1/);
   assert.ok(manifest.tests.every((entry) => entry.expectSelector));
 });
 
+test('guest mode is explicit and only newer-device detection is unavailable', () => {
+  const source = fs.readFileSync(path.join(__dirname, '..', 'public', 'app.js'), 'utf8');
+  assert.match(source, /params\.get\('guest'\) === '1'/);
+  assert.match(source, /Only newer-device detection requires an account/);
+  assert.match(source, /Unavailable without an account/);
+});
 test('the add action saves locally before waiting for episode hydration', () => {
   const source = fs.readFileSync(path.join(__dirname, '..', 'public', 'app.js'), 'utf8');
   const start = source.indexOf('async function addMedia');

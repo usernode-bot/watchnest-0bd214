@@ -77,6 +77,31 @@ test('API authentication remains deny-by-default', async () => {
   assert.equal(pool.calls.length, 0);
 });
 
+test('anonymous users can load the shell and GET catalogs but not the account clock or writes', async () => {
+  const pool = fakePool();
+  const fakeFetch = async () => ({
+    ok:true,
+    async json() {
+      return [{ show:{ id:42, name:'Guest Example', premiered:'2026-01-01', genres:[], summary:'', image:null, rating:{} } }];
+    },
+  });
+  await withServer(createApp({ pool, auth:{ publicKey:'', audience:null }, fetchImpl:fakeFetch }), async (base) => {
+    let response = await fetch(`${base}/`);
+    assert.equal(response.status, 200);
+    assert.match(await response.text(), /WatchNest/);
+
+    response = await fetch(`${base}/api/catalog/search?kind=show&q=guest`);
+    assert.equal(response.status, 200);
+    assert.equal((await response.json()).items[0].title, 'Guest Example');
+
+    response = await fetch(`${base}/api/change-clock`);
+    assert.equal(response.status, 401);
+    response = await fetch(`${base}/api/catalog/search`, { method:'POST' });
+    assert.equal(response.status, 401);
+  });
+  assert.equal(pool.calls.length, 0);
+});
+
 test('catalog validates inputs and never writes catalog data to Postgres', async () => {
   const pool = fakePool();
   const fakeFetch = async () => ({

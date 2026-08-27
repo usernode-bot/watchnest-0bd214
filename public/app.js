@@ -3,7 +3,7 @@
 
   const Domain = window.WatchNestDomain;
   const params = new URLSearchParams(location.search);
-  const token = params.get('token') || '';
+  const token = params.get('guest') === '1' ? '' : (params.get('token') || '');
   const demo = params.get('demo') === '1';
   const validScreens = new Set(['home', 'discover', 'library', 'upcoming', 'profile']);
   const ui = {
@@ -228,6 +228,12 @@
     const stats = Domain.calculateStats(store.state);
     const favorites = Object.values(store.state.library).filter((entry) => entry.favorite);
     const clock = store.state.meta.localClock ? new Date(store.state.meta.localClock).toLocaleString() : 'No changes yet';
+    const privacyCopy = store.isGuest
+      ? 'You are using WatchNest as a guest. Your library, history, ratings, and preferences all work and stay in this browser. Only newer-device detection requires an account.'
+      : 'Your titles, watch history, ratings, and preferences stay in IndexedDB. The backend receives only a numeric last-change timestamp.';
+    const clockStatus = store.isGuest
+      ? 'Unavailable without an account'
+      : (store.state.meta.pendingClock ? 'Waiting to notify backend' : 'Backend notified');
     return `<div class="screen-inner" data-screen="profile">
       <div class="mt-2"><p class="text-xs font-extrabold uppercase tracking-[0.16em] text-amber-300">Private profile</p><h1 class="mt-1 text-3xl font-black tracking-tight">Your watch time</h1><p class="mt-2 text-sm text-slate-400">Calculated entirely from watch events stored in this browser.</p></div>
       <section class="stat-grid mt-5">
@@ -238,8 +244,8 @@
       </section>
       ${rail('Favorites', favorites, `${stats.favorites} saved locally`)}
       <section class="privacy-card">
-        <div class="flex items-start gap-3"><div class="grid h-10 w-10 shrink-0 place-items-center rounded-xl bg-emerald-400/10 text-emerald-300">●</div><div><h2 class="font-extrabold">Browser-only by design</h2><p class="mt-1 text-sm leading-relaxed text-emerald-100/70">Your titles, watch history, ratings, and preferences stay in IndexedDB. The backend receives only a numeric last-change timestamp.</p></div></div>
-        <dl class="mt-4 grid gap-2 text-xs text-slate-400 sm:grid-cols-2"><div><dt class="font-bold text-slate-300">Local clock</dt><dd class="mt-0.5">${escapeHtml(clock)}</dd></div><div><dt class="font-bold text-slate-300">Timestamp status</dt><dd class="mt-0.5">${store.state.meta.pendingClock ? 'Waiting to notify backend' : 'Backend notified'}</dd></div></dl>
+        <div class="flex items-start gap-3"><div class="grid h-10 w-10 shrink-0 place-items-center rounded-xl bg-emerald-400/10 text-emerald-300">●</div><div><h2 class="font-extrabold">Browser-only by design</h2><p class="mt-1 text-sm leading-relaxed text-emerald-100/70">${escapeHtml(privacyCopy)}</p></div></div>
+        <dl class="mt-4 grid gap-2 text-xs text-slate-400 sm:grid-cols-2"><div><dt class="font-bold text-slate-300">Local clock</dt><dd class="mt-0.5">${escapeHtml(clock)}</dd></div><div><dt class="font-bold text-slate-300">Newer-device detection</dt><dd class="mt-0.5">${escapeHtml(clockStatus)}</dd></div></dl>
         <div class="mt-4 flex flex-wrap gap-2"><button type="button" data-action="export" class="secondary-button">Export JSON</button><button type="button" data-action="import" class="secondary-button">Import JSON</button><button type="button" data-action="reset" class="danger-button">Erase this browser</button></div>
       </section>
       ${stats.recent.length ? `<section><div class="section-heading"><h2 class="section-title">Recently watched</h2></div><div class="un-group">${stats.recent.slice(0,8).map((item) => `<div class="un-group-row flex items-center justify-between gap-3 px-4 py-3"><div class="min-w-0"><p class="truncate text-sm font-bold">${escapeHtml(item.title)}</p><p class="text-xs text-slate-500">${escapeHtml(typeLabel(item.type))}</p></div><time class="shrink-0 text-xs text-slate-400">${formatDate(item.at)}</time></div>`).join('')}</div></section>` : ''}
@@ -497,7 +503,7 @@
     render();
     await store.checkRemoteClock();
     if ('serviceWorker' in navigator && !demo) {
-      navigator.serviceWorker.register('/sw.js?v=20260826-5').then((registration) => registration.update()).catch(() => undefined);
+      navigator.serviceWorker.register('/sw.js?v=20260827-6').then((registration) => registration.update()).catch(() => undefined);
     }
     if (window.unNative?.attachPullToRefresh) window.unNative.attachPullToRefresh(screenEl, async () => { ui.catalogItems = await catalog.discover(); render(); }, { topEl:document.getElementById('top-bar') });
     if (window.unNative?.attachKeyboardAvoidance) window.unNative.attachKeyboardAvoidance(screenEl, { topEl:document.getElementById('top-bar') });
