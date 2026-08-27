@@ -31,8 +31,28 @@ test('proposal manifest covers every major screen and the stale-device warning',
   const paths = manifest.tests.map((entry) => entry.path).join('\n');
   for (const screen of ['home', 'discover', 'library', 'upcoming', 'profile']) assert.match(paths, new RegExp(`screen=${screen}`));
   assert.match(paths, /stale=1/);
+  assert.match(paths, /local-only=1/);
   assert.match(paths, /guest=1/);
   assert.ok(manifest.tests.every((entry) => entry.expectSelector));
+});
+
+test('device-only disclosure is dismissible while remote-ahead remains stronger', () => {
+  const html = fs.readFileSync(path.join(__dirname, '..', 'public', 'index.html'), 'utf8');
+  const app = fs.readFileSync(path.join(__dirname, '..', 'public', 'app.js'), 'utf8');
+  assert.match(html, /data-device-only-notice/);
+  assert.match(html, /data-action="dismiss-device-notice"/);
+  assert.match(app, /showDeviceNotice = store\.remoteAhead \|\| store\.deviceOnlyNoticeVisible/);
+  assert.match(app, /warningDismissEl\.hidden = store\.remoteAhead/);
+  assert.match(app, /store\.dismissDeviceOnlyNotice\(\)/);
+});
+
+test('remote clock check starts before live catalog discovery', () => {
+  const source = fs.readFileSync(path.join(__dirname, '..', 'public', 'app.js'), 'utf8');
+  const start = source.indexOf('async function initialize()');
+  const initialize = source.slice(start);
+  assert.ok(start >= 0);
+  assert.ok(initialize.indexOf('store.checkRemoteClock()') < initialize.indexOf('catalog.discover()'));
+  assert.ok(initialize.indexOf('render()') < initialize.indexOf('store.checkRemoteClock()'));
 });
 
 test('guest mode is explicit and only newer-device detection is unavailable', () => {

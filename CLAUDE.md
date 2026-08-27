@@ -26,8 +26,14 @@ Next → mark watched → see progress and Upcoming releases.
 - The remote-ahead warning is sticky for the entire session once the backend
   clock is larger than the local clock. A later write from the stale device
   must not silently clear it.
-- A tokenless launch uses the separate guest namespace. An identity-bearing
-  cached URL continues to resolve the signed-in namespace while offline.
+- The device-only disclosure is acknowledged locally per Usernode user and
+  browser. Acknowledging it must never mutate app state or advance the backend
+  clock; the non-dismissible remote-ahead warning always takes precedence.
+- A tokenless launch reuses this browser's last authenticated namespace when
+  one is remembered; it must never create or clear an anonymous library for a
+  previously authenticated device. Otherwise it uses the separate guest
+  namespace. An identity-bearing cached URL continues to resolve the
+  signed-in namespace while offline.
 
 ## App conventions
 

@@ -2,6 +2,8 @@
   'use strict';
 
   const Domain = root.WatchNestDomain;
+  const LAST_USER_KEY = 'watchnest:last-user-id';
+  const DEVICE_NOTICE_KEY_PREFIX = 'watchnest:device-only-ack:';
   const GUEST_USER_ID = 'guest';
 
   function decodeTokenUserId(token) {
@@ -13,6 +15,26 @@
     } catch {
       return null;
     }
+  }
+
+  function rememberedUserId() {
+    try { return localStorage.getItem(LAST_USER_KEY); } catch { return null; }
+  }
+
+  function rememberUserId(userId) {
+    try { localStorage.setItem(LAST_USER_KEY, String(userId)); } catch {}
+  }
+
+  function deviceNoticeKey(userId) {
+    return `${DEVICE_NOTICE_KEY_PREFIX}${userId}`;
+  }
+
+  function deviceNoticeAcknowledged(userId) {
+    try { return localStorage.getItem(deviceNoticeKey(userId)) === '1'; } catch { return false; }
+  }
+
+  function rememberDeviceNotice(userId) {
+    try { localStorage.setItem(deviceNoticeKey(userId), '1'); } catch {}
   }
 
   function openDatabase(userId) {
@@ -45,16 +67,19 @@
   }
 
   class WatchNestStore {
-    constructor({ token, demo = false, forceStale = false } = {}) {
+    constructor({ token, demo = false, forceStale = false, forceDeviceNotice = false } = {}) {
       this.token = token || '';
       this.demo = Boolean(demo);
       this.forceStale = Boolean(forceStale);
-      const tokenUserId = decodeTokenUserId(this.token);
-      this.isGuest = !this.demo && !tokenUserId;
-      this.userId = this.demo ? 'demo' : (tokenUserId || GUEST_USER_ID);
+      this.forceDeviceNotice = Boolean(forceDeviceNotice);
+      const authenticatedUserId = decodeTokenUserId(this.token) || rememberedUserId();
+      this.isGuest = !this.demo && !authenticatedUserId;
+      this.userId = this.demo ? 'demo' : (authenticatedUserId || GUEST_USER_ID);
       this.db = null;
       this.state = null;
       this.remoteAhead = this.isGuest ? false : this.forceStale;
+      this.deviceOnlyNoticeVisible = this.forceDeviceNotice
+        || (!this.demo && !this.isGuest && !deviceNoticeAcknowledged(this.userId));
       this.listeners = new Set();
       this.clockQueue = Promise.resolve();
       this.storageAvailable = true;
@@ -73,11 +98,18 @@
       this.listeners.forEach((listener) => listener(this.state));
     }
 
+    dismissDeviceOnlyNotice() {
+      this.deviceOnlyNoticeVisible = false;
+      if (!this.demo && this.userId) rememberDeviceNotice(this.userId);
+      this.emit();
+    }
+
     async initialize() {
       if (this.demo) {
         this.state = Domain.createInitialState(this.userId);
         return this.state;
       }
+      if (!this.isGuest) rememberUserId(this.userId);
       try {
         this.db = await openDatabase(this.userId);
         const stored = await dbGet(this.db, 'app');
@@ -192,6 +224,7 @@
   root.WatchNestStore = {
     WatchNestStore,
     decodeTokenUserId,
+    deviceNoticeKey,
     GUEST_USER_ID,
   };
 })(window);

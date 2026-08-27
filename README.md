@@ -20,6 +20,11 @@ WatchNest shows a sticky warning on every screen. Guest mode keeps every app
 feature except this newer-device detection. No title, episode, rating,
 username, search, or device data is sent to Postgres.
 
+Each browser also shows a one-time, per-user notice that viewing data does not
+sync between devices. Its acknowledgement stays in that browser only and does
+not advance the backend clock. Export and Import are the explicit transfer
+path between devices.
+
 ## Catalogs
 
 The Express server performs non-persistent read-through access to keyless
