@@ -22,6 +22,9 @@
   const screenEl = document.getElementById('screen');
   const navEl = document.getElementById('bottom-nav');
   const warningEl = document.getElementById('remote-warning');
+  const warningTitleEl = document.getElementById('device-notice-title');
+  const warningCopyEl = document.getElementById('device-notice-copy');
+  const warningDismissEl = document.getElementById('device-notice-dismiss');
   const subtitleEl = document.getElementById('header-subtitle');
   const networkEl = document.getElementById('network-status');
   const importEl = document.getElementById('import-file');
@@ -293,7 +296,16 @@
 
   function render() {
     if (!store?.state) return;
-    warningEl.hidden = !store.remoteAhead;
+    const showDeviceNotice = store.remoteAhead || store.deviceOnlyNoticeVisible;
+    warningEl.hidden = !showDeviceNotice;
+    warningEl.classList.toggle('is-device-only', !store.remoteAhead);
+    warningTitleEl.textContent = store.remoteAhead
+      ? 'Another device has newer data.'
+      : 'Viewing data does not sync between devices.';
+    warningCopyEl.textContent = store.remoteAhead
+      ? 'This browser’s private library may be behind. Export from the newer device and import here; this warning stays visible for the session.'
+      : 'This browser has its own library, history, ratings, and preferences. Use Export and Import to move them to another device.';
+    warningDismissEl.hidden = store.remoteAhead;
     const subtitles = { home:'Your next episode is waiting', discover:'Movies, shows & anime', library:'Saved only in this browser', upcoming:'Episodes and releases ahead', profile:'Private stats and data', detail:'Title details' };
     const active = ui.detailKey ? 'detail' : ui.screen;
     subtitleEl.textContent = subtitles[active];
@@ -395,6 +407,7 @@
     try {
       if (action === 'navigate') navigate(button.dataset.screen);
       else if (action === 'open-search') navigate('discover');
+      else if (action === 'dismiss-device-notice') store.dismissDeviceOnlyNotice();
       else if (action === 'open-detail') await openDetail(key, button);
       else if (action === 'close-detail') {
         const mutation = () => { ui.detailKey = null; render(); };
@@ -481,10 +494,17 @@
   async function initialize() {
     updateNetworkStatus();
     catalog = new window.WatchNestCatalog.CatalogClient({ token, demo });
-    store = new window.WatchNestStore.WatchNestStore({ token, demo, forceStale:params.get('stale') === '1' });
+    store = new window.WatchNestStore.WatchNestStore({
+      token,
+      demo,
+      forceStale: params.get('stale') === '1',
+      forceDeviceNotice: params.get('local-only') === '1',
+    });
     await Promise.all([catalog.initialize(), store.initialize()]);
     if (demo) store.seedDemo(catalog.fallback);
     store.subscribe(render);
+    render();
+    const clockCheck = store.checkRemoteClock();
     ui.catalogItems = await catalog.discover();
     if (ui.detailKey) {
       const media = findMedia(ui.detailKey);
@@ -495,9 +515,9 @@
       }
     }
     render();
-    await store.checkRemoteClock();
+    await clockCheck;
     if ('serviceWorker' in navigator && !demo) {
-      navigator.serviceWorker.register('/sw.js?v=20260826-5').then((registration) => registration.update()).catch(() => undefined);
+      navigator.serviceWorker.register('/sw.js?v=20260827-6').then((registration) => registration.update()).catch(() => undefined);
     }
     if (window.unNative?.attachPullToRefresh) window.unNative.attachPullToRefresh(screenEl, async () => { ui.catalogItems = await catalog.discover(); render(); }, { topEl:document.getElementById('top-bar') });
     if (window.unNative?.attachKeyboardAvoidance) window.unNative.attachKeyboardAvoidance(screenEl, { topEl:document.getElementById('top-bar') });

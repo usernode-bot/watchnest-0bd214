@@ -15,7 +15,7 @@
   (function () {
     if (!('serviceWorker' in navigator) || !navigator.serviceWorker.controller) return;
     navigator.serviceWorker.addEventListener('controllerchange', function () {
-      var key = 'watchnest:worker-reload:20260826-5';
+      var key = 'watchnest:worker-reload:20260827-6';
       if (sessionStorage.getItem(key)) return;
       sessionStorage.setItem(key, '1');
       location.reload();
@@ -60,7 +60,7 @@
   <script defer src="/domain.js"></script>
   <script defer src="/catalog.js"></script>
   <script defer src="/store.js"></script>
-  <script defer src="/app.js?v=20260826-5"></script>
+  <script defer src="/app.js?v=20260827-6"></script>
 </head>
 <body>
   <div id="app-shell" class="app-shell">
@@ -84,9 +84,10 @@
       </div>
     </header>
 
-    <aside id="remote-warning" class="remote-warning" data-remote-ahead-warning hidden>
+    <aside id="remote-warning" class="remote-warning" data-remote-ahead-warning data-device-only-notice aria-live="polite" hidden>
       <svg viewBox="0 0 24 24" class="mt-0.5 h-5 w-5 shrink-0" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M12 9v4m0 4h.01M10.3 3.7 2.6 17a2 2 0 0 0 1.7 3h15.4a2 2 0 0 0 1.7-3L13.7 3.7a2 2 0 0 0-3.4 0Z"/></svg>
-      <div><strong>Another device has newer data.</strong> This browser’s private library may be behind. The warning will stay visible on every screen for this session.</div>
+      <div class="min-w-0 flex-1"><strong id="device-notice-title">Device-only viewing data.</strong> <span id="device-notice-copy">WatchNest does not sync your library between devices.</span></div>
+      <button id="device-notice-dismiss" type="button" data-action="dismiss-device-notice" class="device-notice-dismiss">Got it</button>
     </aside>
 
     <main id="screen" class="screen-scroller" tabindex="-1">

@@ -3,6 +3,7 @@
 
   const Domain = root.WatchNestDomain;
   const LAST_USER_KEY = 'watchnest:last-user-id';
+  const DEVICE_NOTICE_KEY_PREFIX = 'watchnest:device-only-ack:';
 
   function decodeTokenUserId(token) {
     if (!token) return null;
@@ -21,6 +22,18 @@
 
   function rememberUserId(userId) {
     try { localStorage.setItem(LAST_USER_KEY, String(userId)); } catch {}
+  }
+
+  function deviceNoticeKey(userId) {
+    return `${DEVICE_NOTICE_KEY_PREFIX}${userId}`;
+  }
+
+  function deviceNoticeAcknowledged(userId) {
+    try { return localStorage.getItem(deviceNoticeKey(userId)) === '1'; } catch { return false; }
+  }
+
+  function rememberDeviceNotice(userId) {
+    try { localStorage.setItem(deviceNoticeKey(userId), '1'); } catch {}
   }
 
   function openDatabase(userId) {
@@ -53,14 +66,17 @@
   }
 
   class WatchNestStore {
-    constructor({ token, demo = false, forceStale = false } = {}) {
+    constructor({ token, demo = false, forceStale = false, forceDeviceNotice = false } = {}) {
       this.token = token || '';
       this.demo = Boolean(demo);
       this.forceStale = Boolean(forceStale);
+      this.forceDeviceNotice = Boolean(forceDeviceNotice);
       this.userId = this.demo ? 'demo' : (decodeTokenUserId(this.token) || rememberedUserId());
       this.db = null;
       this.state = null;
       this.remoteAhead = this.forceStale;
+      this.deviceOnlyNoticeVisible = this.forceDeviceNotice
+        || (!this.demo && Boolean(this.userId) && !deviceNoticeAcknowledged(this.userId));
       this.listeners = new Set();
       this.clockQueue = Promise.resolve();
       this.storageAvailable = true;
@@ -77,6 +93,12 @@
 
     emit() {
       this.listeners.forEach((listener) => listener(this.state));
+    }
+
+    dismissDeviceOnlyNotice() {
+      this.deviceOnlyNoticeVisible = false;
+      if (!this.demo && this.userId) rememberDeviceNotice(this.userId);
+      this.emit();
     }
 
     async initialize() {
@@ -194,5 +216,6 @@
   root.WatchNestStore = {
     WatchNestStore,
     decodeTokenUserId,
+    deviceNoticeKey,
   };
 })(window);

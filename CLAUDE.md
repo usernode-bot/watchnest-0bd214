@@ -24,6 +24,9 @@ Next → mark watched → see progress and Upcoming releases.
 - The remote-ahead warning is sticky for the entire session once the backend
   clock is larger than the local clock. A later write from the stale device
   must not silently clear it.
+- The device-only disclosure is acknowledged locally per Usernode user and
+  browser. Acknowledging it must never mutate app state or advance the backend
+  clock; the non-dismissible remote-ahead warning always takes precedence.
 - A tokenless offline launch must reuse the last authenticated namespace. It
   must never create or clear an anonymous library.
 
