@@ -124,6 +124,27 @@ test('catalog validates inputs and never writes catalog data to Postgres', async
   assert.equal(pool.calls.length, 0);
 });
 
+test('discover degrades to the bundled catalog when a live provider is unreachable', async () => {
+  const pool = fakePool();
+  const failingFetch = async () => { throw new Error('provider unreachable'); };
+  await withServer(createApp({ pool, auth:signedIn, fetchImpl:failingFetch }), async (base) => {
+    const anime = await fetch(`${base}/api/catalog/discover?kind=anime`);
+    assert.equal(anime.status, 200);
+    const animeBody = await anime.json();
+    assert.equal(animeBody.fallback, true);
+    assert.ok(animeBody.items.length > 0);
+    assert.equal(animeBody.items[0].type, 'anime');
+    assert.match(animeBody.items[0].episodes[0].airdate, /^\d{4}-\d{2}-\d{2}$/);
+
+    const shows = await fetch(`${base}/api/catalog/discover?kind=show`);
+    assert.equal(shows.status, 200);
+    const showBody = await shows.json();
+    assert.equal(showBody.fallback, true);
+    assert.ok(showBody.items.every((item) => item.type === 'show'));
+  });
+  assert.equal(pool.calls.length, 0);
+});
+
 test('schema removes the starter table and creates only the private numeric clock table', async () => {
   const pool = fakePool();
   await initializeSchema(pool);

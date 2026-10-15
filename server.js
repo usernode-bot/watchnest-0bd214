@@ -1,6 +1,7 @@
 'use strict';
 
 const express = require('express');
+const fs = require('fs');
 const path = require('path');
 const { Pool } = require('pg');
 const jwt = require('jsonwebtoken');
@@ -14,6 +15,14 @@ const PUBLIC_GET_PATHS = new Set([
 ]);
 const CATALOG_TYPES = new Set(['show', 'anime', 'movie']);
 const CATALOG_SOURCES = new Set(['tvmaze', 'jikan']);
+const FALLBACK_CATALOG = (() => {
+  try {
+    const raw = JSON.parse(fs.readFileSync(path.join(__dirname, 'public', 'fallback-catalog.json'), 'utf8'));
+    return Array.isArray(raw.items) ? raw.items : [];
+  } catch {
+    return [];
+  }
+})();
 
 function text(value, max = 5000) {
   return String(value == null ? '' : value).replace(/<[^>]*>/g, '').trim().slice(0, max);
@@ -118,6 +127,24 @@ function normalizeJikanEpisode(episode, runtime) {
     runtime: Number(runtime) || 24,
     synopsis: '',
   };
+}
+
+// Discovery must keep working when a live provider cannot be reached: serve
+// the same bundled titles the app already shows offline, with their relative
+// dates resolved the way the client resolves them. Nothing is persisted.
+function fallbackItems(kind) {
+  const today = Date.now();
+  const iso = (offsetDays) => new Date(today + offsetDays * 86400000).toISOString().slice(0, 10);
+  return FALLBACK_CATALOG.filter((item) => item.type === kind).map((item) => ({
+    ...item,
+    releaseDate: item.releaseOffsetDays == null ? (item.releaseDate || null) : iso(item.releaseOffsetDays),
+    episodes: (item.episodes || []).map((episode) => ({
+      ...episode,
+      airdate: episode.offsetDays == null ? (episode.airdate || null) : iso(episode.offsetDays),
+      airstamp: episode.offsetDays == null ? (episode.airstamp || null) : `${iso(episode.offsetDays)}T20:00:00Z`,
+    })),
+    updatedAt: today,
+  }));
 }
 
 async function upstreamJson(fetchImpl, url, options = {}) {
@@ -231,7 +258,7 @@ function createApp({ pool, fetchImpl = global.fetch, auth = {} } = {}) {
       const data = await upstreamJson(fetchImpl, 'https://api.jikan.moe/v4/top/anime?filter=airing&limit=18&sfw=true');
       return res.json({ items: (Array.isArray(data.data) ? data.data : []).map(normalizeJikan) });
     } catch {
-      return res.status(502).json({ error: 'Catalog provider is temporarily unavailable' });
+      return res.json({ items: fallbackItems(kind), fallback: true });
     }
   });
 

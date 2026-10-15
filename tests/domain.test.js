@@ -108,6 +108,44 @@ test('import validates account ownership before replacing current local data', (
   assert.equal(imported.meta.pendingClock, true);
 });
 
+test('tap guard ignores a second tap on the same identity within the window', () => {
+  let at = now;
+  const guard = Domain.createTapGuard({ windowMs: 400, now: () => at });
+  assert.equal(guard.begin('toggle-episode|tvmaze:1|e1'), true);
+  guard.end('toggle-episode|tvmaze:1|e1');
+  at += 100;
+  assert.equal(guard.begin('toggle-episode|tvmaze:1|e1'), false);
+});
+
+test('tap guard accepts the same identity again after the window', () => {
+  let at = now;
+  const guard = Domain.createTapGuard({ windowMs: 400, now: () => at });
+  assert.equal(guard.begin('a'), true);
+  guard.end('a');
+  at += 450;
+  assert.equal(guard.begin('a'), true);
+});
+
+test('tap guard blocks the same identity while it is still in flight', () => {
+  let at = now;
+  const guard = Domain.createTapGuard({ windowMs: 400, now: () => at });
+  assert.equal(guard.begin('a'), true);
+  at += 1000;
+  assert.equal(guard.begin('a'), false);
+  guard.end('a');
+  assert.equal(guard.begin('a'), true);
+});
+
+test('tap guard never blocks a different identity', () => {
+  let at = now;
+  const guard = Domain.createTapGuard({ windowMs: 400, now: () => at });
+  assert.equal(guard.begin('toggle-episode|tvmaze:1|e1'), true);
+  at += 10;
+  assert.equal(guard.begin('toggle-episode|tvmaze:1|e2'), true);
+  at += 10;
+  assert.equal(guard.begin('rate|wikidata:Q1||1'), true);
+});
+
 test('guest import accepts an explicit export from any account into the guest namespace', () => {
   let signed = Domain.reduce(Domain.createInitialState('7'), { type:'ADD_MEDIA', media:show() }, now);
   const imported = Domain.reduce(

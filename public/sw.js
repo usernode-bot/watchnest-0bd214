@@ -1,13 +1,13 @@
 'use strict';
 
-const CACHE = 'watchnest-shell-v6';
+const CACHE = 'watchnest-shell-v7';
 const SHELL = [
   '/index.html',
   '/tailwind.css',
   '/domain.js',
   '/catalog.js',
   '/store.js',
-  '/app.js?v=20260827-6',
+  '/app.js?v=20260827-7',
   '/fallback-catalog.json',
 ];
 

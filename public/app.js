@@ -19,6 +19,7 @@
   let store;
   let catalog;
   let searchTimer;
+  const tapGuard = Domain.createTapGuard();
   const screenEl = document.getElementById('screen');
   const navEl = document.getElementById('bottom-nav');
   const warningEl = document.getElementById('remote-warning');
@@ -410,6 +411,13 @@
     if (!button) return;
     const action = button.dataset.action;
     const key = button.dataset.key;
+    // One tap per identity: the same action on the same item and choice. A
+    // second tap inside the window, or while the first is still saving, is
+    // ignored silently.
+    const tapId = [action, key, button.dataset.episodeId, button.dataset.season, button.dataset.watched, button.dataset.rating, button.dataset.value, button.dataset.screen]
+      .map((value) => (value == null ? '' : String(value)))
+      .join('|');
+    if (!tapGuard.begin(tapId)) return;
     try {
       if (action === 'navigate') navigate(button.dataset.screen);
       else if (action === 'open-search') navigate('discover');
@@ -446,6 +454,8 @@
       }
     } catch (error) {
       notify(error.message || 'Something went wrong');
+    } finally {
+      tapGuard.end(tapId);
     }
   });
 
@@ -523,7 +533,7 @@
     render();
     await clockCheck;
     if ('serviceWorker' in navigator && !demo) {
-      navigator.serviceWorker.register('/sw.js?v=20260827-6').then((registration) => registration.update()).catch(() => undefined);
+      navigator.serviceWorker.register('/sw.js?v=20260827-7').then((registration) => registration.update()).catch(() => undefined);
     }
     if (window.unNative?.attachPullToRefresh) window.unNative.attachPullToRefresh(screenEl, async () => { ui.catalogItems = await catalog.discover(); render(); }, { topEl:document.getElementById('top-bar') });
     if (window.unNative?.attachKeyboardAvoidance) window.unNative.attachKeyboardAvoidance(screenEl, { topEl:document.getElementById('top-bar') });
