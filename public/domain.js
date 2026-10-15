@@ -12,6 +12,26 @@
     return JSON.parse(JSON.stringify(value));
   }
 
+  function createTapGuard({ windowMs = 400, now = () => Date.now() } = {}) {
+    const span = Number(windowMs) || 400;
+    let lastId = null;
+    let lastAt = -Infinity;
+    const inFlight = new Set();
+    return {
+      begin(id) {
+        if (inFlight.has(id)) return false;
+        if (id === lastId && now() - lastAt < span) return false;
+        lastId = id;
+        lastAt = now();
+        inFlight.add(id);
+        return true;
+      },
+      end(id) {
+        inFlight.delete(id);
+      },
+    };
+  }
+
   function createInitialState(userId) {
     return {
       schemaVersion: SCHEMA_VERSION,
@@ -367,6 +387,7 @@
     calculateStats,
     cleanMedia,
     createInitialState,
+    createTapGuard,
     exportState,
     getNextEpisode,
     getNextUpcomingEpisode,
