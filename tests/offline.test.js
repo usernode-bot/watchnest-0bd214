@@ -90,3 +90,15 @@ test('typing refreshes only search results and rejects stale responses', () => {
   assert.match(inputHandler, /refreshDiscoverResults\(\)/);
   assert.match(inputHandler, /ui\.query !== query \|\| ui\.discoverType !== type/);
 });
+
+test('empty Home shows one card with one Explore titles button', () => {
+  const source = fs.readFileSync(path.join(__dirname, '..', 'public', 'app.js'), 'utf8');
+  const start = source.indexOf('function renderHome()');
+  const end = source.indexOf('function typePills', start);
+  const renderHome = source.slice(start, end);
+  assert.ok(start >= 0 && end > start);
+  assert.doesNotMatch(renderHome, /Nothing tracked yet/);
+  assert.doesNotMatch(renderHome, /Find something great/);
+  assert.match(renderHome, /Your nest is ready/);
+  assert.match(renderHome, /Explore titles/);
+});

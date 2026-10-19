@@ -10,6 +10,12 @@
       "expectText": "Watch next"
     },
     {
+      "name": "Empty Home shows one card with one button",
+      "path": "/?guest=1&screen=home",
+      "expectSelector": "[data-screen=home]",
+      "expectText": "Explore titles"
+    },
+    {
       "name": "Discover renders all media types",
       "path": "/?demo=1&screen=discover",
       "expectSelector": "[data-screen=discover]",
