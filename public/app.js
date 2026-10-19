@@ -135,13 +135,12 @@
           <div class="min-w-0 flex-1"><h1 class="truncate text-2xl font-black tracking-tight">${escapeHtml(lead.entry.media.title)}</h1>
           <p class="mt-1 truncate text-sm text-slate-300">${escapeHtml(episodeCode(lead.episode))} · ${escapeHtml(lead.episode.title)}</p></div>
           <button type="button" data-action="toggle-episode" data-key="${escapeHtml(lead.entry.media.key)}" data-episode-id="${escapeHtml(lead.episode.id)}" class="primary-button relative z-[2] flex items-center gap-2">${icon('check', 'h-4 w-4')} Watched</button>
-        </div>` : `<div class="relative z-[1] mt-3"><h1 class="text-2xl font-black tracking-tight">Your nest is ready</h1><p class="mt-1 max-w-lg text-sm leading-relaxed text-slate-300">Add a show or anime and its next unwatched episode will always be waiting here.</p><button type="button" data-action="navigate" data-screen="discover" class="primary-button mt-4">Find something great</button></div>`}
+        </div>` : `<div class="relative z-[1] mt-3"><h1 class="text-2xl font-black tracking-tight">Your nest is ready</h1><p class="mt-1 max-w-lg text-sm leading-relaxed text-slate-300">Add a show or anime and its next unwatched episode will always be waiting here.</p><button type="button" data-action="navigate" data-screen="discover" class="primary-button mt-4">Explore titles</button></div>`}
       </section>
       ${watchNext.length ? `<section><div class="section-heading"><div><h2 class="section-title">Up next</h2><p class="section-kicker">One tap moves every story forward</p></div><span class="text-xs font-bold text-amber-300">${watchNext.length} ready</span></div><div class="grid gap-2 md:grid-cols-2">${watchNext.slice(0, 8).map(nextRow).join('')}</div></section>` : ''}
       ${rail('Continue watching', library.filter((entry) => entry.media.type !== 'movie' && !inactive.includes(entry)).slice(0, 10), 'Progress saved privately in this browser')}
       ${rail('Caught up', caughtUp.slice(0, 10), 'Nothing aired is waiting')}
       ${rail('Not watched for a while', inactive.slice(0, 10), 'Still here when you are')}
-      ${!library.length ? `<div class="mt-6">${emptyState('Nothing tracked yet', 'Browse live catalogs for movies, shows, and anime, then add anything with one tap.', true)}</div>` : ''}
     </div>`;
   }
 

@@ -33,7 +33,20 @@ test('proposal manifest covers every major screen and the stale-device warning',
   assert.match(paths, /stale=1/);
   assert.match(paths, /local-only=1/);
   assert.match(paths, /guest=1/);
+  assert.match(paths, /guest=1&screen=home/);
   assert.ok(manifest.tests.every((entry) => entry.expectSelector));
+});
+
+test('the empty Home screen merges into one card with one catalog button', () => {
+  const source = fs.readFileSync(path.join(__dirname, '..', 'public', 'app.js'), 'utf8');
+  const start = source.indexOf('function renderHome');
+  const end = source.indexOf('function typePills', start);
+  const renderHome = source.slice(start, end);
+  assert.ok(start >= 0 && end > start);
+  assert.doesNotMatch(renderHome, /Nothing tracked yet/);
+  assert.doesNotMatch(renderHome, /Find something great/);
+  assert.match(renderHome, /Your nest is ready/);
+  assert.match(renderHome, /Explore titles/);
 });
 
 test('device-only disclosure is dismissible while remote-ahead remains stronger', () => {
