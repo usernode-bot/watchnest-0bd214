@@ -46,6 +46,12 @@
       "expectText": "Viewing data does not sync between devices"
     },
     {
+      "name": "Empty Home shows one card with one button",
+      "path": "/?guest=1&screen=home",
+      "expectSelector": "[data-screen=home]",
+      "expectText": "Explore titles"
+    },
+    {
       "name": "Guest mode keeps every local feature",
       "path": "/?guest=1&screen=profile",
       "expectSelector": "[data-screen=profile]",
